@@ -1,0 +1,116 @@
+---
+title: "Progress Memo 1"
+subtitle: |
+  | Final Project 
+  | Data Science 2 with R (STAT 301-2)
+author: "Noah Short"
+date: today
+
+format:
+  html:
+    toc: true
+    embed-resources: true
+    
+execute:
+  echo: false
+  warning: false
+
+from: markdown+emoji 
+reference-location: margin
+citation-location: margin
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[My Final Project Repo](https://github.com/stat301-2-2024-winter/final-project-2-noahshort.git)
+
+:::
+
+## Prediction Problem
+
+I would like to solve the regression problem of predicting player performance, as indicated by Wins Above Replacement, using both statistical predictors such as points above average (calculated multiple different ways) as well as categorical ones (draft round/status, height, weight, home country). 
+
+A prediction model would be helpful here in two ways: first, teams could use the model to better scout players and coaches could use this information to better put together a well-rounded team.
+
+My motivation for this problem is two-fold:
+
+a) I enjoy watching sports, but not necessarily basketball, so it will be good to learn some more about a sport I am unfamiliar with.
+
+b) I would like to learn more about which facets of the game are most important, both statistically and generally, so I can look for them when watching at the amateur level. 
+
+## Data source
+
+My data comes from two sources, as I will be putting two data sets together. 
+
+The first data set comes from FiveThirtyEight and is made up of over 19,000 observations, each one being a player's season metrics dating back to 1977. 
+
+The second data set comes from Kaggle and is made up of over 12,000 observations, each one being a player's draft information dating back to 1996. 
+
+I will need to do some data wrangling to get to a workable data set, but I hope to have a basis of more than 3,000 players, with the ability to aggregate over multiple seasons using averages while also keeping seasons separate.
+
+[Advanced Metrics Raptor Data - FiveThirtyEight](https://github.com/fivethirtyeight/data/blob/master/nba-raptor/historical_RAPTOR_by_player.csv)
+
+[Draft Data - Kaggle](https://www.kaggle.com/datasets/justinas/nba-players-data?resource=download)
+
+## Why this data
+
+For the data on season statistics, the kicker is that these metrics are advanced, in that they do not measure simple points and rebounds, but rather measure wins above replacement (WAR), "raptor" data (points above average), and predator data (predicted points above average). These metrics tend to balance outlier performances and give a more well-rounded indication of player performance. Also, the distribution of these data may be more normalized than other indicators. This data could be interesting in its cross-metric predictability. For example, data on wins above replacement in the playoffs could be a strong predictor of raptor defense.
+
+The Kaggle data include draft round and player country, as well as height and weight. This data could be most applicable to the draft setting when applying baseline metrics like height, weight, and draft round to a model for predicting performance.
+
+## Data quality & complexity check
+
+```{r}
+#| label: Data Quality and Complexity Check
+
+library(tidyverse)
+metrics <- read_csv("historical_RAPTOR_by_player.csv")
+draft <- read_csv("all_seasons.csv")
+```
+The metrics data set has 19159 observations and 15 variables. 13 of these variables are numerical and 2 are categorical/characters.
+
+The draft data set has 12844 observations and 22 variables. 14 of these variables are numerical and 8 are categorical/characters.
+
+```{r}
+#| label: Missing Variable Summary
+
+metrics |> naniar::miss_var_summary()
+
+draft |> naniar::miss_var_summary()
+```
+These data sets are impressively clean, with only 6 missing values across both of them! I will need to really step up my game in the modeling portion of the project.
+
+## Potential data issues
+
+Since these data sets are clean, the only potential issues may arise when merging the data sets together. There could be some syntactical differences in the player names, which will be the key to help link the sets together. There could also be groups of players not on one data set but on the other. The obvious one is players on the metric set from pre-1996, as these players won't be included on the draft data set. The other one is that there could be some players who joined the league in a unique, later method than the typical draft; these players could also have missing values upon the merge.
+
+## Target Variable Analysis
+war_total is the outcome variable in the metrics data set
+
+```{r}
+#| label: Target Variable Analysis
+
+metrics |> ggplot(aes(war_total)) + geom_histogram(bins = 100)
+```
+We're skewed right a bit, let's see how much a log transformation helps
+
+```{r}
+#| label: war_total log transformation
+
+metrics |>
+  mutate(log_war = log(war_total, base = 10)) |> 
+  ggplot(aes(log_war)) + geom_histogram(bins = 100)
+```
+Even worse, plus everyone with a WAR = 0 gets removed. We will have to make do with the skewness in the outcome variable, meaning linear models requiring a symmetric distribution should be taken with a grain of salt.
+
+## Timeline
+
+Wrangle data and have easily workable data set by Monday February 26th
+
+Create and fit models throughout the week of 2/26
+
+Analyze results weekend of Friday March 1st
+
+Write Up/Summarize by Wednesday March 6th for bonus!
