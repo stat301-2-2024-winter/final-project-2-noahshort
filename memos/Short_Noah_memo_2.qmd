@@ -1,0 +1,120 @@
+---
+title: "Progress Memo 2"
+subtitle: |
+  | Final Project 
+  | Data Science 2 with R (STAT 301-2)
+author: "Noah Short"
+date: today
+
+format:
+  html:
+    toc: true
+    embed-resources: true
+    
+execute:
+  echo: false
+  warning: false
+
+from: markdown+emoji 
+reference-location: margin
+citation-location: margin
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[My Final Project Repo](https://github.com/stat301-2-2024-winter/final-project-2-noahshort.git)
+
+:::
+
+## Assessment Metric
+My assessment metric will be R-squared. The predictor variable, a player's WAR in the following season or next_year_war_total, has a small range of only about 34 units. This means that a strong model will have very small residual values that may be hard to interpret. Furthermore, I personally think R-squared is a strong measure for models in general beyond this project alone, in that the R-squared value can be understood within a general context of "how good is this model" on its own, where the intricacies of the model need not be understood.
+
+When thinking about the limitations of R-squared, it is natural to think about certain predictors that are omitted and that the model CANNOT directly explain. In my context, the largest ones include, but are not limited to: injury, seasonal intricacies (ex: pandemic), evolution of basketball strategy over time, and years of experience in the league.
+
+## Analysis Plan
+Some context for the tidied and wrangled data set is important to consider here. The data set has 12,184 observations, each of which represents an NBA player's metrics for that season and includes some biographical information for the player. A missingness report is pasted below:
+
+```{r}
+#| label: Missingness report
+#| echo: false
+#| warning: false
+
+setwd("/Users/noahshort/Desktop/stat-301-2/final-project/final-project-2")
+library(here)
+load("results/missing_report_predictor.rda")
+missing_report_predictor
+```
+
+We see here that the data set is still very clean. The two variables with missingness can be easily explained.
+
+next_season_war_total is missing for every player's final season. Add this? If I can get the data. This means that a missing value indicates that a player retired, which could be due to age or injury, or that a player did not perform well enough to play in the NBA the following year. I want to keep these values missing because there are many players who stay in the league with a negative WAR, so turning these values into zeroes would not be perfectly representative.
+
+draft_number is missing for every player who did not enter the league through the formal NBA draft. I don't anticipate using this variable in recipes, and I accomodate for this missingness in the draft_round variable, which is a factor with 3 levels: 1, 2, and U for undrafted.
+
+The initial split of the data will be done with respect to season with the most recent seasons being part of the testing set and all others being part of the training set. This is done because the natural future application of this model is with the future in mind, so the model should be tested in that same manner, based on the data we have at our disposal. The below table will inspire the exact proportion of the split:
+
+```{r}
+#| label: Table for Split
+#| echo: false
+#| warning: false
+
+setwd("/Users/noahshort/Desktop/stat-301-2/final-project/final-project-2")
+library(tidyverse)
+
+complete <- read_csv("data/complete_data_fp2.csv")
+
+complete |> 
+  group_by(season) |> 
+  summarize(n = n()) |> knitr::kable()
+complete |> 
+  summarize(n = n()) |> knitr::kable()
+```
+If we use seasons 22, 21, 20, and 19 (ending in 2022 back to 2019, respectively) as the testing set, the proportion is: 
+
+(601 + 540 + 526 + 526) / 12184 = .18
+
+So 82% of the data is in the training set and 18% is in the testing set. This will be the initial split.
+
+
+I will then use v-fold cross-validation with 10 folds and 3 repeats to resample the training set. I want to use v-fold cross validation across the data from 1997 - 2018 because it will screen out any sort of explanation for the outcome based on seasonal shifts, which I do not want to be part of our R-squared final result. For example, there were lockouts (conflict between players and team ownership that delays or cancels portions of the season) that impacted the 1999 and 2012 seasons in this data. V-fold cross validation will suppress any seasonal differences in the data and fit based solely on the data at hand. The 2020 season is in the testing set, which is bound to have similar intricacies from the pandemic. 10 folds and 3 repeats are relatively arbitrary choices, but the book recommends 10 folds and our training set is pretty large, so 3 repeats will be sufficient. In total, there will be 30 fits per model.
+
+
+My 6 models will be the below types:
+
+- Null Model
+
+- Simple Linear Model
+
+- Random Forest
+
+- Boosted Trees
+
+- K-Nearest Neighbors
+
+- Naive Bayes
+
+
+I plan to use 2 recipes:
+
+- One recipe will be heavier on statistical predictors, with lots of thought put into which predictors may correlate heavily with each other, as I want to avoid too much heterogeneity
+
+- The other recipe will be heavier on the biographical metrics like height, weight, and draft information. 
+
+
+
+## Model Progress
+
+
+## Model Fit Results
+
+
+## Summary
+
+
+## Data Sources
+[Advanced Metrics Raptor Data - FiveThirtyEight](https://github.com/fivethirtyeight/data/blob/master/nba-raptor/historical_RAPTOR_by_player.csv)
+
+[Draft Data - Kaggle](https://www.kaggle.com/datasets/justinas/nba-players-data?resource=download)
+

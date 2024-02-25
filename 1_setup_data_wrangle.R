@@ -66,6 +66,22 @@ predictor_data <- joined_data |>
   relocate(war_total, next_season_war_total) |> 
   ungroup()
 
-predictor_data |> naniar::miss_var_summary()
+predictor_data |> 
+  group_by(season) |> 
+  summarize(n = n()) |> print(n = 26)
+#should get the war values for 2023
+
+predictor_data |> 
+  filter(season != 22) |> 
+  naniar::miss_var_summary()
+#outcome variable is only missing 15.8% of time for seasons outside of most recent
+#getting the 2023 war data would reduce outcome missingness by more than 4 pps.
+
+missing_report_predictor <- predictor_data |> naniar::miss_var_summary() |> knitr::kable()
+save(missing_report_predictor, file = here("results/missing_report_predictor.rda"))
 
 write_csv(predictor_data, "data/complete_data_fp2.csv")
+
+predictor_data |> skimr::skim_without_charts(next_season_war_total)
+
+
