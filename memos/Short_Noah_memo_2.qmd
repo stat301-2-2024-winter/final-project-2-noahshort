@@ -85,7 +85,9 @@ My 6 models will be the below types:
 
 - Null Model
 
-- Simple Linear Model
+- Linear Model
+
+- Elastic Net
 
 - Random Forest
 
@@ -93,14 +95,22 @@ My 6 models will be the below types:
 
 - K-Nearest Neighbors
 
-- Naive Bayes
+
+Think about factor variables - cause memory issues
 
 
-I plan to use 2 recipes:
 
-- One recipe will be heavier on statistical predictors, with lots of thought put into which predictors may correlate heavily with each other, as I want to avoid too much heterogeneity
+I plan to use 5 recipes:
 
-- The other recipe will be heavier on the biographical metrics like height, weight, and draft information. 
+- Baseline
+
+- Linear + Penalized
+
+- Tree-based
+
+- Linear with variant
+
+- Tree-based with variant
 
 
 
