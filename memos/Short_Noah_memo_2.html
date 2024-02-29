@@ -2977,7 +2977,7 @@ vertical-align: -.125em;
   <li><a href="#analysis-plan" id="toc-analysis-plan" class="nav-link" data-scroll-target="#analysis-plan">Analysis Plan</a></li>
   <li><a href="#model-progress" id="toc-model-progress" class="nav-link" data-scroll-target="#model-progress">Model Progress</a></li>
   <li><a href="#model-fit-results" id="toc-model-fit-results" class="nav-link" data-scroll-target="#model-fit-results">Model Fit Results</a></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#summary-and-next-steps" id="toc-summary-and-next-steps" class="nav-link" data-scroll-target="#summary-and-next-steps">Summary and Next Steps</a></li>
   <li><a href="#data-sources" id="toc-data-sources" class="nav-link" data-scroll-target="#data-sources">Data Sources</a></li>
   </ul>
 </nav>
@@ -3030,8 +3030,8 @@ Github Repo Link
 </div>
 <section id="assessment-metric" class="level2">
 <h2 class="anchored" data-anchor-id="assessment-metric">Assessment Metric</h2>
-<p>My assessment metric will be R-squared. The predictor variable, a player’s WAR in the following season or next_year_war_total, has a small range of only about 34 units. This means that a strong model will have very small residual values that may be hard to interpret. Furthermore, I personally think R-squared is a strong measure for models in general beyond this project alone, in that the R-squared value can be understood within a general context of “how good is this model” on its own, where the intricacies of the model need not be understood.</p>
-<p>When thinking about the limitations of R-squared, it is natural to think about certain predictors that are omitted and that the model CANNOT directly explain. In my context, the largest ones include, but are not limited to: injury, seasonal intricacies (ex: pandemic), evolution of basketball strategy over time, and years of experience in the league.</p>
+<p>My assessment metric will be RMSE. The predictor variable, a player’s WAR in the following season or next_year_war_total, has a small range of only about 34 units. This means that the rmse will be simple to interpret in the grand scheme of overall accuracy, especially since most of the observations are clustered towards the center of the distribution.</p>
+<p>When thinking about the limitations of RMSE, it is natural to think about certain predictors that are omitted and that the model CANNOT directly explain, or in other words, what predictors may be contributing to the error that we can’t directly test for. In my context, the largest ones include, but are not limited to: injury, seasonal intricacies (ex: pandemic), evolution of basketball strategy over time, and years of experience in the league.</p>
 </section>
 <section id="analysis-plan" class="level2">
 <h2 class="anchored" data-anchor-id="analysis-plan">Analysis Plan</h2>
@@ -3227,7 +3227,7 @@ Github Repo Link
 </div>
 </div>
 <p>We see here that the data set is still very clean. The two variables with missingness can be easily explained.</p>
-<p><code>next_season_war_total</code> is missing for every player’s final season. This means that a missing value indicates that a player retired, which could be due to age or injury, or that a player did not perform well enough to play in the NBA the following year. I want to keep these values missing because there are many players who stay in the league with a negative WAR, so turning these values into zeroes would not be perfectly representative.I will address imputation when crafting my recipes</p>
+<p><code>next_season_war_total</code> is missing for every player’s final season. This means that a missing value indicates that a player retired, which could be due to age or injury, or that a player did not perform well enough to play in the NBA the following year. I want to keep these values missing because there are many players who stay in the league with a negative WAR, so turning these values into zeroes would not be perfectly representative. I will address imputation when crafting my recipes</p>
 <p><code>draft_number</code> is missing for every player who did not enter the league through the formal NBA draft. I don’t anticipate using this variable in recipes, and I accommodate for this missingness in the <code>draft_round</code> variable, which is a factor with 3 levels: 1, 2, and U for un-drafted.</p>
 <p>The initial split of the data will be done with respect to season with the most recent seasons being part of the testing set and all others being part of the training set. This is done because the natural future application of this model is with the future in mind, so the model should be tested in that same manner, based on the data we have at our disposal. The below table will inspire the exact proportion of the split:</p>
 <div class="cell">
@@ -3361,7 +3361,7 @@ Github Repo Link
 <p>If we use seasons 21, 20, 19, and 18 (ending in 2021 back to 2018, respectively) as the testing set, the proportion is:</p>
 <p>(540 + 526 + 526 + 537) / 11583 = .18</p>
 <p>So 82% of the data (about 9450 observations) is in the training set and 18% (about 2130 obs.) is in the testing set. This will be the initial split.</p>
-<p>I will then use v-fold cross-validation with 10 folds and 4 repeats to resample the training set, with stratification based on the outcome variable, <code>next_season_war_total</code>. I want to use this stratification method with v-fold cross validation across the data from 1997 - 2017 because I am looking for aggregate results across all of these seasons and all player output levels. 10 folds and 4 repeats are relatively arbitrary choices, but the book recommends 10 folds and our training set is pretty large, so 4 repeats will be sufficient. In total, there will be 40 fits per model.</p>
+<p>I will then use v-fold cross-validation with 6 folds and 5 repeats to resample the training set, with stratification based on the outcome variable, <code>next_season_war_total</code>. I want to use this stratification method with v-fold cross validation across the data from 1997 - 2017 because I am looking for aggregate results across all of these seasons and all player output levels. 6 folds and 5 repeats are relatively arbitrary choices, but I want to make sure each fold is large enough to limit the influence of seasonal intricacies. My training set is large enough such that I feel 30 trainings per model is a good number.</p>
 <p>My 6 models will be the below types:</p>
 <ul>
 <li><p>Null Model, no tuning</p></li>
@@ -3375,12 +3375,73 @@ Github Repo Link
 </section>
 <section id="model-progress" class="level2">
 <h2 class="anchored" data-anchor-id="model-progress">Model Progress</h2>
+<p>I created a very basic recipe that uses 7 of my statistical predictors in estimating the outcome variable. It is saved as <code>basketball_recipe_memo.rda</code> in the reicpes folder.</p>
+<p>I fit a null model and basic lm model to this recipe, the results are in the results folder and discussed in the next section.</p>
 </section>
 <section id="model-fit-results" class="level2">
 <h2 class="anchored" data-anchor-id="model-fit-results">Model Fit Results</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">.metric</th>
+<th style="text-align: left;">.estimator</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">std_err</th>
+<th style="text-align: left;">.config</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">rmse</td>
+<td style="text-align: left;">standard</td>
+<td style="text-align: right;">3.214109</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">0.0171303</td>
+<td style="text-align: left;">Preprocessor1_Model1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">.metric</th>
+<th style="text-align: left;">.estimator</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">std_err</th>
+<th style="text-align: left;">.config</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">rmse</td>
+<td style="text-align: left;">standard</td>
+<td style="text-align: right;">2.133574</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">0.0095547</td>
+<td style="text-align: left;">Preprocessor1_Model1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Promising results here. The null model stinks, as missing by 3 wins per player is abysmal, but improvements are large in the linear model. Hopefully we can get even better with more complex models.</p>
 </section>
-<section id="summary" class="level2">
-<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<section id="summary-and-next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="summary-and-next-steps">Summary and Next Steps</h2>
+<p>So far I have all the data ready to work with and a baseline recipe and model crafted. The next steps are as follows:</p>
+<ol type="1">
+<li><p>Dig into the predictor variables to determime transformations that may be valuable to the recipes</p></li>
+<li><p>Consider which method of imputation is best for the outcome variable, and consider carrying it out in the pre-processing steps.</p></li>
+<li><p>Build recipes</p></li>
+<li><p>Build models</p></li>
+<li><p>Analyze, analyze, analyze.</p></li>
+</ol>
 </section>
 <section id="data-sources" class="level2">
 <h2 class="anchored" data-anchor-id="data-sources">Data Sources</h2>

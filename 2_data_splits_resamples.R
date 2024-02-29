@@ -7,6 +7,9 @@ library(doMC)
 #prefer tidymodels
 tidymodels_prefer()
 
+#set seed
+set.seed(647)
+
 #load in data 
 
 load("data/basketball_data.rda")
@@ -30,8 +33,10 @@ basketball_train |> summarize(
 
 basketball_folds <- vfold_cv(
   basketball_train, 
-  v = 10, 
-  repeats = 4, 
+  v = 6, 
+  repeats = 5, 
   strata = next_season_war_total)
 
 save(basketball_folds, file = here("data/basketball_folds.rda"))
+
+
