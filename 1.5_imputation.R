@@ -59,6 +59,7 @@ imputed_basketball_data <- basketball_preimpute_data |>
   ) |> 
   ungroup() |> 
   filter(season != 2022)
+#Note: Used generative AI to help brainstorm how to do this. Definitely didn't need to in hindsight.
 
 imputed_missingness <- imputed_basketball_data |> naniar::miss_var_summary() |> knitr::kable()
 

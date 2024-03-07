@@ -12,12 +12,12 @@ set.seed(647)
 
 #load in data 
 
-load("data/basketball_data.rda")
+load("data/imputed_basketball_data.rda")
 
-basketball_train <- basketball_data |> 
-  filter(season != 18 | season != 19 | season != 20 | season != 21)
-basketball_test <- basketball_data |> 
-  filter(season == 18 | season == 19 | season == 20 | season == 21)
+basketball_train <- imputed_basketball_data |> 
+  filter(season != 2018 | season != 2019 | season != 2020 | season != 2021)
+basketball_test <- imputed_basketball_data |> 
+  filter(season == 2018 | season == 2019 | season == 2020 | season == 2021)
 
 save(basketball_train, file = here("data/basketball_train.rda"))  
 save(basketball_test, file = here("data/basketball_test.rda"))

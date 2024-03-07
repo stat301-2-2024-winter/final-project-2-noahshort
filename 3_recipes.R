@@ -17,6 +17,7 @@ load("data/basketball_train.rda")
 #contributes to his team’s offense and defense per 100 possessions, 
 #relative to a league-average player
 
+## Recipes for Memo 2 -- IRRELEVENT FOR FINAL PROJECT
 basketball_recipe_memo <- recipe(
   next_season_war_total ~ 
     war_total + raptor_offense + raptor_defense + pts + reb + ast + age,
@@ -34,8 +35,6 @@ basketball_recipe_memo |>
 save(basketball_recipe_memo, file = here("recipes/basketball_recipe_memo.rda"))
 
 
-#Going to impute the missingness in the target variable using the median
-#0 Is not truly representative
-#Mean is skewed upwards
+
 
 
