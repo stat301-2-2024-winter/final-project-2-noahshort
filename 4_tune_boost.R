@@ -55,7 +55,7 @@ boost_params <- parameters(boost_spec) |>
          mtry = mtry(c(1, 8)))
 
 # build tuning grid
-boost_grid <- grid_random(boost_params, levels = 5)
+boost_grid <- grid_random(boost_params, levels = 12)
 
 # fits ----
 boost_tuned_stats <- 
