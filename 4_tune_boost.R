@@ -55,7 +55,7 @@ boost_params <- parameters(boost_spec) |>
          mtry = mtry(c(1, 8)))
 
 # build tuning grid
-boost_grid <- grid_random(boost_params, levels = 4)
+boost_grid <- grid_random(boost_params, levels = 5)
 
 # fits ----
 boost_tuned_stats <- 
@@ -76,3 +76,6 @@ boost_tuned_bio <-
 
 save(boost_tuned_stats, file = here("results/boost_tuned_stats.rda"))
 save(boost_tuned_bio, file = here("results/boost_tuned_bio.rda"))
+
+
+
