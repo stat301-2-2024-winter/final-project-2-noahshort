@@ -32,3 +32,10 @@ basketball_recipe_memo |>
   glimpse()
 
 save(basketball_recipe_memo, file = here("recipes/basketball_recipe_memo.rda"))
+
+
+#Going to impute the missingness in the target variable using the median
+#0 Is not truly representative
+#Mean is skewed upwards
+
+
