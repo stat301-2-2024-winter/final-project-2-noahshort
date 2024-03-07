@@ -77,8 +77,6 @@ basketball_recipe_rf_stats <- recipe(
   data = basketball_train
 ) |> 
   step_dummy(draft_round, one_hot = TRUE) |> 
-  step_interact(~ pts:raptor_offense) |> 
-  step_interact(~ ast:raptor_offense) |> 
   step_zv(all_predictors()) |> 
   step_normalize(all_numeric_predictors())
 
@@ -114,7 +112,6 @@ basketball_recipe_rf_bio <- recipe(
 ) |> 
   step_dummy(draft_round, one_hot = TRUE) |> 
   step_dummy(country, one_hot = TRUE) |> 
-  step_interact(~ player_height:player_weight) |> 
   step_zv(all_predictors()) |> 
   step_normalize(all_numeric_predictors())
 

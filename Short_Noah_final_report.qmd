@@ -1,0 +1,66 @@
+---
+title: "Predicting NBA Player Success"
+subtitle: |
+  | Final Project 
+  | Data Science 2 with R (STAT 301-2)
+author: "Noah Short"
+date: today
+
+format:
+  html:
+    toc: true
+    embed-resources: true
+    
+execute:
+  echo: false
+  warning: false
+
+from: markdown+emoji 
+reference-location: margin
+citation-location: margin
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[My Final Project Repo](https://github.com/stat301-2-2024-winter/final-project-2-noahshort.git)
+
+:::
+
+## Introduction
+
+This project looks to predict an NBA player's Win's Above Replacement (WAR) in the next year using statistics from the previous year and biographical information. I would like to predict this variable to investigate how strongly a player's performance in the previous year is connected to the next year's. From my own experience as a fan, it seems that outside of the top 20-30 players in the NBA, role players seem to have a "revolving door" type of experience with success: constantly fluctuating between stretches of stardom and disappointment. This leads me to hypothesize that this prediction may be quite challenging.
+
+I use two data sources in this project. Each data source contains observations of a player's statistics in a single season accompanied by some biographical information. The first data source is heavier on the statistics and comes from Fivethirtyeight. It contains their "Raptor" data, which they describe as "a plus-minus statistic that measures the number of points a player contributes to his team’s offense and defense per 100 possessions, relative to a league-average player" (Silver). The other data source is a public data set on Kaggle with some more basic statistics as well as information on draft position and a player's home country.
+
+The data overlaps between 1997 and 2022, so the final workable data set for my purposes contains observations of all players between 1997 and 2021. 
+
+
+## Data Overview
+
+After wrangling and tidying the data, the final, workable data set contains 11,583 observations across 25 seasons. One issue that arose when wrangling the data was the imputation of missing values for the final observation from a player's career. It would not be accurate to simply impute with a zero, since many players end the year with a negative WAR yet remain in the NBA for long periods of time. I decided to impute in the pre-processing stage by taking the player's WAR in the observed year, dividing by the median WAR for that season, and multiplying that ratio by the following season's median WAR. This works as a linear continuation of the player's trend compared to his competition, but assumes his playing level won't taper off too heavily. 
+
+
+## Methods
+
+
+## Model Building and Selection 
+
+
+## Final Model Analysis
+
+
+## Conclusion 
+
+
+## References
+
+- Silver, Nate. “Introducing Raptor, Our New Metric for the Modern NBA.” FiveThirtyEight, FiveThirtyEight, 10 Oct. 2019, fivethirtyeight.com/features/introducing-raptor-our-new-metric-for-the-modern-nba/. 
+
+
+## Data Sources
+[Advanced Metrics Raptor Data - FiveThirtyEight](https://github.com/fivethirtyeight/data/blob/master/nba-raptor/historical_RAPTOR_by_player.csv)
+
+[Draft Data - Kaggle](https://www.kaggle.com/datasets/justinas/nba-players-data?resource=download)
+
