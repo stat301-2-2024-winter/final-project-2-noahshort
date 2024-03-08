@@ -17,7 +17,7 @@ load("data/basketball_train.rda")
 #contributes to his team’s offense and defense per 100 possessions, 
 #relative to a league-average player
 
-## Recipes for Memo 2 -- IRRELEVENT FOR FINAL PROJECT
+## Recipes for Memo 2 -- IRRELEVENT FOR FINAL REPORT
 basketball_recipe_memo <- recipe(
   next_season_war_total ~ 
     war_total + raptor_offense + raptor_defense + pts + reb + ast + age,

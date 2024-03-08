@@ -44,12 +44,14 @@ save(basketball_test_metrics, file = "results/basketball_test_metrics.rda")
 
 basketball_results_plot <- ggplot(basketball_test_res, aes(x = next_season_war_total, y = .pred)) + 
   # Create a diagonal line:
-  geom_abline(lty = 2) + 
-  geom_point(alpha = 0.5) + 
-  labs(y = "Predicted WAR for Next Season", x = "True WAR for Next Season") +
+  geom_abline(lty = 2, color = "grey40") + 
+  geom_point(alpha = 0.5, color = "slateblue4") + 
+  labs(title = "Next Season's WAR: Predicted vs. True Values") +
   # Scale and size the x- and y-axis uniformly:
-  coord_obs_pred()
+  coord_obs_pred() +
+  theme_fivethirtyeight()
 
+ggsave("plots/basketball_results_plot.png")
 save(basketball_results_plot, file = here("results/basketball_results_plot.rda"))
 
 load("results/basketball_test_metrics.rda")

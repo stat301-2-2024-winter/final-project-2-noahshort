@@ -60,9 +60,21 @@ The only variable with significant missingness is `draft_number`, or the exact p
 ![Class Imbalance of Players' Draft Round](plots/draft_round_plot.png)
 It is fairly obvious that there are far more players are drafted in the 1st round and end up recording statistics in the NBA. However, given there are a plethora of other predictors in play to indicate success on the court, I am not concerned that the players drafted in the 1st round will skew the impacts of this variable. Two of the best and most tenured players in this data set (LeBron James and Manu Ginobili) were Undrafted and Round 2 selections, respectively.
 
-#### Target Variable Analysis
+### Target Variable Analysis
 
-Getting to the target variable now, here is a plot of its distribution:
+Getting to the target variable now, here is a plot of its distribution and breakdown of its spread:
+
+```{r}
+#| label: skim chart
+#| echo: false
+#| warning: false
+
+load("data/imputed_basketball_data.rda")
+
+imputed_basketball_data |> 
+  skimr::skim_without_charts(next_season_war_total) |> knitr::kable()
+```
+
 
 ![Histogram of Outcome Variable](plots/target_var_plot.png)
 
@@ -72,30 +84,249 @@ The plot is unimodal with some skew. It is centered at zero which is nice, but I
 
 Not only does the skew get worse, but missing values are produced for all values of zero for this specific transformation. This led me to choose to leave the outcome variable untouched in this project.
 
-#### EDA of Predictors
+### EDA of Predictors
 
 I conducted a very baseline EDA of the predictor variables and their distributions with the outcome variable in `2.5_predictor_variable_analysis.R`. The only notable takeaways are as follows:
 
-- The predictor `war_total` will remain as-is, largely because I chose to leave the outcome variable unchanged and they are on the same scale since they are the same statistic. There is no concern with heterogeneity since the outcome variable is from the future, essentially unaffected by any of the predictors directly, including `war_total`.
+- The predictor `war_total` will remain as-is, largely because I chose to leave the outcome variable unchanged and they are on the same scale since they are the same statistic. There is no concern with multicollinearity since the outcome variable is from the future, essentially unaffected by any of the predictors directly, including `war_total`.
 - None of the numerical predictors need any transformation due to skew, most are roughly linear in their relationship with the target variable.
 - `age`, `player_height`, and `player_weight` seem to have the weakest relationship with the outcome variable.
 
 
 ## Methods
 
+### Prediction Problem
+This project deals with a **regression** problem of attempting to predict the value of an NBA player's season Wins Above Replacement (WAR) using data from the previous season.  
+
+### Data Split
+The final data was split by season, with the 4 most recent seasons making up the test set and the 21 previous seasons making up the training set. This amounted to a roughly 82:18 split overall. With more than 11,500 observations, this put more than 2,000 observations in the testing set, which I felt was more than enough. The split was ordered by season because the natural use for a model like this is to attempt to predict a player's WAR in a future season, so we should look at testing results the same way. 
+
+### Resampling Technique
+I chose to use V-fold Cross Validation to resample the data. I used 6 folds and 5 repeats, so each model would be trained 30 times. With a testing set of roughly 9,500 observations, this translated to each model fit being trained on about 7,900 observations and tested on about 1,500 observations. With 30 trainings for each model, I have no concerns given our number of observations. 
+
+### Model Types
+I used 6 different model types in this project:
+
+**Null Model** - used baseline recipe
+
+- Had its own baseline recipe simply using predictors found in both recipes
+- Simplest form of model, expected to be the least accurate (which it was, by a lot)
+- One single model
+
+**Linear Model** - used lm recipes
+
+- Simple OLS regression where each predictor gets a coefficient estimate
+- Seeks to minimize the squared sum of residuals
+- One single model
+
+**Elastic Net Model** - used lm recipes
+
+- Linear regression with varying 'mixture' and 'penalty' hyperparameters, which were both tuned.
+- Mixture term is a scale from 0 to 1 and indicates how strong the model should be in fitting. Lower mixture means more reliance on the data itself, higher mixture means greater use of tools.
+- Penalty term is a scale from 0 to 1 where 0 means the model is solely concerned with balancing out effects of multiple predictors, while 1 means the model is solely concerned with finding which predictors matter and which don't.
+- 2 parameters tuned using a regular grid over 5 levels each, so 25 different elastic net models were trained 30 times each, for 750 total trainings.
+
+**K-Nearest Neighbors Model** - used lm recipes
+
+- Flexible model that predicts the value of a new data point using the data points nearest the new one in each predictor.
+- `neighbors` hyperparameter tuned: dictates how many neighbors to look at.
+- Tuned over 5 levels using a regular grid, so 5 different KNN models were trained 30 times each, for 150 total trainings.
+
+**Random Forest Model** - used rf recipes
+
+- Decision tree-based model where many decision trees are ran through to get an estimate then averaged over.
+- 2 hyperparamaters tuned: `min_n` and `min_n`. `trees` set to 500.
+- `min_n` is the number of data points to split.
+- `mtry` is the number of predictors to use in the decision trees.
+- Both tuning parameters used a regular grid over 5 levels, so 25 different random forest models were trained 30 times each, for 750 total fits.
+
+**Boosted Trees Model** - used rf recipes
+
+- Add-on to random forest, in that each tree learns from the last and is combined into a stronger model. Three hyperparameters were tuned: `min_n` and `mtry` are the same as random forest, but `learn_rate` is new.
+- `learn_rate` is the level of influence one tree has on the next, it ranges from 0 to 1.
+- These 3 hyperparameters were tuned using a *random* grid over *12* levels to get a valuable and randomized mix. This means there were 1,728 models trained 30 times each for a total of 51,840 fittings.
+
+### Recipes
+I used 5 total recipes: 2 stats-heavy recipes (lm and rf), 2 biography-heavy recipes (lm and rf), and 1 baseline recipe
+
+**Statistics-Heavy Recipes**
+
+- Used the following predictors: `war_total`, `raptor_offense`, `raptor_defense`, `pts`, `reb`, `ast`, and `draft_round`
+- Dummy encoded `draft_round` (used one-hot encoding for the tree-based recipe)
+- Created an interaction term between `raptor_offense` and `pts` as well as `raptor_offense` and `ast` because points and assists both contribute positively to the RAPTOR statistic, as described earlier by Fivethirtyeight. These interactions were removed for the tree-based recipe
+- Removed predictors with zero variance
+- Normalized and scaled all numerical predictors
+
+**Biography-Heavy Recipes**
+
+- Used the following predictors: `war_total`, `pts`, `reb`, `ast`, `age`, `player_height`, `player_weight`, `draft_round`, `country`
+- Dummy encoded `draft_round` and `country` (used one-hot encoding for the tree-based recipe)
+- Created an interaction term between `player_weight` and `player_height`, but removed it for the tree-based recipe
+- Removed predictors with zero variance
+- Normalized and scaled all numerical predictors
+
+**Baseline Recipe**
+
+- Used the following predictors: `war_total`, `pts`, `reb`, `ast`, `draft_round`
+- Dummy encoded `draft_round`
+- Removed predictors with zero variance
+- Normalized and scaled all numerical predictors
+
+
+### Assessment Metric
+My assessment metric is root mean squared error, or RMSE. With the outcome variable having a small total range of about 35, it will be easy to interpret in terms of the "root-squared number of wins" the models are off by.
+
 
 ## Model Building and Selection 
 
+I will start by going through the results of each model.
 
-## Final Model Analysis
+### Null Model
+```{r}
+#| label: Null results
+#| echo: false
+#| warning: false
+library(tidymodels)
+load("results/null_fit.rda")
+show_best(null_fit) |> knitr::kable()
+```
+To be blunt, the null model stinks. Missing by a root-mean-squared 3.4 WAR is horrendous, given that NBA all-stars sometimes have 3.4 WAR at the all-star break. But, this is expected since it is just a null model that uses fewer predictors in its recipe.
+
+### Linear Model
+
+```{r}
+#| label: LM model results
+#| echo: false
+#| warning: false
+
+load("results/lm_fit_stats.rda")
+load("results/lm_fit_bio.rda")
+
+show_best(lm_fit_stats) |> knitr::kable()
+show_best(lm_fit_bio) |> knitr::kable()
+```
+The stats-based model is shown first, followed by the bio-based one. Both models improve mightily from the null, and *spoiler alert* one of these ends up being the best model.
+
+### Elastic Net Model
+
+```{r}
+#| label: Enet model results
+#| echo: false
+#| warning: false
+
+load("results/en_tuned_stats.rda")
+load("results/en_tuned_bio.rda")
+
+show_best(en_tuned_stats) |> knitr::kable()
+show_best(en_tuned_bio) |> knitr::kable()
+```
+We see here that both the stats-based and bio-based models are very strong, and that lower penalty seems better while mixture can vary a bit. The bias towards a lower penalty makes sense, since these recipes require the model to juggle several different predictors. 
+
+
+
+### K-Nearest Neighbors Model
+
+```{r}
+#| label: KNN model results
+#| echo: false
+#| warning: false
+
+load("results/knn_tuned_stats.rda")
+load("results/knn_tuned_bio.rda")
+
+show_best(knn_tuned_stats) |> knitr::kable()
+show_best(knn_tuned_bio) |> knitr::kable()
+```
+These models are a bit worse than the linear ones, but there is a clear trend in both cases that increasing the number of neighbors used improves the RMSE.
+
+### Random Forest Model
+
+```{r}
+#| label: RF model results
+#| echo: false
+#| warning: false
+
+load("results/rf_tuned_stats.rda")
+load("results/rf_tuned_bio.rda")
+
+show_best(rf_tuned_stats) |> knitr::kable()
+show_best(rf_tuned_bio) |> knitr::kable()
+```
+These models are also very strong (comparatively) but the hyperparameters seem to vary all over the place, as in there is no clear trend to which values are best. This makes me think that if I was confined to a random forest model, I would want to use more levels with a random grid to see if I could "strike gold" per se. 
+
+### Boosted Tree Model
+
+```{r}
+#| label: BT model results
+#| echo: false
+#| warning: false
+
+load("results/boost_tuned_stats.rda")
+load("results/boost_tuned_bio.rda")
+
+show_best(boost_tuned_stats) |> knitr::kable()
+show_best(boost_tuned_bio) |> knitr::kable()
+```
+I initially used the typical 5 levels and regular grid with these models but decided to switch after seeing the results. There seems to be little-to-no rhyme or reason to the results here, as the best 5 models (out of more than 1,500!) include a range of hyperparameter values. And yet, the bottom line is that these models are much worse than the others. 
+
+### Differences Between Recipes
+
+The differences are not large, but in all model types besides boosted tree, the biography-heavy recipe performs slightly better than the stats-heavy recipe. 
+
+### And the Winner is...
+
+```{r}
+#| label: Combined model results
+
+load("results/best_models_table.rda")
+best_models_table
+```
+The best-performing model was the linear model using the biography-heavy recipe. 
+
+This result surprised me initially, as the best models seemed to always be random forest or boosted tree models in labs for class. However, when thinking further I realized that my regression problem and recipe setup are very conducive to a simple OLS problem; one statistical metric that comes from an amalgam of statistics and background information each fighting for the most accurate coefficient to predict success. 
+
+
+## Testing and Analyzing the Linear Model
+
+Fitting the linear model from above to the testing set yielded the following metrics:
+
+```{r}
+#| label: test metrics
+#| echo: false
+#| warning: false
+
+load("results/basketball_test_metrics.rda")
+basketball_test_metrics
+```
+- The average square root of the squared difference between the true and predicted values is 1.99 wins above replacement.
+
+- Our model accounts for 56.8% of the variance in the WAR value for a player in the following season.
+
+- The average difference between the true and predicted values is 1.34 wins above replacement.
+
+There are several takeaways from these results. To start, the model improved! This should raise some skeptcism, but taken at face value this means the model is doing exactly what we want it to do, in that it takes the time-aspect into account and improves as we get closer to the current environment. This is why we split the data based on season, not randomly. Also, the RMSE and MAE are not great, in my opinion. We saw earlier that the 75th percentile of the outcome variable is 2.94, so having an average error of nearly half of that 75th percentile is not great, as many of the observations have outcome values near 0. This iffy performance is supplemented by an equally iffy R-squared, which tells us there is still 44% of the variance unaccounted for. Maybe a kitchen sink recipe would capture more of this, but we saw that some more complex models didn't improve the RMSE, so it could be that NBA player WAR is hard to predict. 
+
+Here is a plot of the results: 
+
+![Predicted vs. True Values](plots/basketball_results_plot.png)
+
+This plot certainly explains some of the model's tendencies. The predictions are much more accurate at values near zero, as there is clearly some flaring out of the predictions as the true value of the outcome variable increases. Also of note is the fact that at true WAR values above 10 only **one** prediction is an over-prediction, meaning the model is downward biased at high values of the true WAR. 
 
 
 ## Conclusion 
 
+To quickly summarize: I took statistical and biographical data from NBA players by season between 1997 and 2021 to attempt to predict each player's WAR (Wins Above Replacement) in the following season. I used 6 different models and 2 strategically targeted recipes (one at statistical indicators and another at biographical ones) to make this prediction. It turned out that a relatively basic linear model performed the best on the training set of data, and applying it to the testing set actually improved its performance while providing some key takeaways.  
+
+The takeaways from the test results provide a couple implications for how I could improve the model in the future:
+
+- More Predictors: This is a fairly straightforward one, but given most models had similar performance across both recipes, it seems clear that (at least in the linear case) we could see some marginal improvements with more predictors, assuming they are indicative.
+
+- Better Indication for Elite Players: The model was scared to overestimate WAR for players with very high true WARs, so including an indicator for personal accolades such as awards or all-pro team selections could push the model to not be as timid.
+
 
 ## References
 
-- Silver, Nate. “Introducing Raptor, Our New Metric for the Modern NBA.” FiveThirtyEight, FiveThirtyEight, 10 Oct. 2019, fivethirtyeight.com/features/introducing-raptor-our-new-metric-for-the-modern-nba/. 
+- Silver, Nate. “Introducing Raptor, Our New Metric for the Modern NBA.” FiveThirtyEight, FiveThirtyEight, 10 Oct. 2019, [fivethirtyeight.com/features/introducing-raptor-our-new-metric-for-the-modern-nba/.](fivethirtyeight.com/features/introducing-raptor-our-new-metric-for-the-modern-nba/) 
 
 
 ## Data Sources
