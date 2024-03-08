@@ -315,7 +315,7 @@ This plot certainly explains some of the model's tendencies. The predictions are
 
 ## Conclusion 
 
-To quickly summarize: I took statistical and biographical data from NBA players by season between 1997 and 2021 to attempt to predict each player's WAR (Wins Above Replacement) in the following season. I used 6 different models and 2 strategically targeted recipes (one at statistical indicators and another at biographical ones) to make this prediction. It turned out that a relatively basic linear model performed the best on the training set of data, and applying it to the testing set actually improved its performance while providing some key takeaways.  
+To quickly summarize: I took statistical and biographical data from NBA players by season between 1997 and 2021 to attempt to predict each player's WAR (Wins Above Replacement) in the following season. I used 6 different models and 2 strategically targeted recipes (one at statistical indicators and another at biographical ones) to make this prediction. It turned out that a relatively basic linear model with an emphasis on biographical predictors performed best on the resampled training set of data, and applying it to the testing set actually improved its performance while providing some key takeaways.  
 
 The takeaways from the test results provide a couple implications for how I could improve the model in the future:
 
