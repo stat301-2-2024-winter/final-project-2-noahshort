@@ -61,9 +61,41 @@ imputed_basketball_data <- basketball_preimpute_data |>
   filter(season != 2022)
 #Note: Used generative AI to help brainstorm how to do this. Definitely didn't need to in hindsight.
 
-imputed_missingness <- imputed_basketball_data |> naniar::miss_var_summary() |> knitr::kable()
+imputed_missingness <- imputed_basketball_data |> naniar::miss_var_summary()
 
 save(imputed_basketball_data, file = here("data/imputed_basketball_data.rda"))
 
 save(imputed_missingness, file = here("results/imputed_missingness.rda"))
 
+library(ggthemes)
+
+load("data/imputed_basketball_data.rda")
+
+draft_round_plot <- imputed_basketball_data |> 
+  ggplot(aes(draft_round)) +
+  geom_bar(fill = "slateblue4") +
+  labs(
+    title = "Distribution of Draft Rounds"
+  ) +
+  scale_x_discrete(
+    labels = c("Round 1", "Round 2", "Undrafted")
+  ) +
+  theme_fivethirtyeight()
+
+ggsave("plots/draft_round_plot.png")
+
+target_var_plot <- imputed_basketball_data |> 
+  ggplot(aes(next_season_war_total)) +
+  geom_histogram(bins = 75, fill = "slateblue4") +
+  labs(title = "Univariate Plot of Target Variable: Next Season's WAR") +
+  theme_fivethirtyeight()
+
+ggsave("plots/target_var_plot.png")
+
+log_target_var_plot <- imputed_basketball_data |> 
+  ggplot(aes(log(next_season_war_total))) +
+  geom_histogram(bins = 75, fill = "slateblue4") +
+  labs(title = "Univariate Plot of Logged Target Variable: Next Season's WAR") +
+  theme_fivethirtyeight()
+
+ggsave("plots/log_target_var_plot.png")

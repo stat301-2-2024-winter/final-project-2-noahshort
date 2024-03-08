@@ -30,7 +30,7 @@ citation-location: margin
 
 ## Introduction
 
-This project looks to predict an NBA player's Win's Above Replacement (WAR) in the next year using statistics from the previous year and biographical information. I would like to predict this variable to investigate how strongly a player's performance in the previous year is connected to the next year's. From my own experience as a fan, it seems that outside of the top 20-30 players in the NBA, role players seem to have a "revolving door" type of experience with success: constantly fluctuating between stretches of stardom and disappointment. This leads me to hypothesize that this prediction may be quite challenging.
+This project looks to predict an NBA player's Win's Above Replacement (WAR) in the next year using statistics from the previous year and biographical information. Wins Above Replacement is a relatively new statistic in many sports that uses a laughingly complicated formula to calculate a player's value in a season or across a career in terms of the number of wins they added to the team above a typical "replacement" player. I would like to predict this variable to investigate how strongly a player's performance in the previous year is connected to the next year's. From my own experience as a fan, it seems that outside of the top 20-30 players in the NBA, role players seem to have a "revolving door" type of experience with success: constantly fluctuating between stretches of stardom and disappointment. This leads me to hypothesize that this prediction may be quite challenging.
 
 I use two data sources in this project. Each data source contains observations of a player's statistics in a single season accompanied by some biographical information. The first data source is heavier on the statistics and comes from Fivethirtyeight. It contains their "Raptor" data, which they describe as "a plus-minus statistic that measures the number of points a player contributes to his team’s offense and defense per 100 possessions, relative to a league-average player" (Silver). The other data source is a public data set on Kaggle with some more basic statistics as well as information on draft position and a player's home country.
 
@@ -39,7 +39,46 @@ The data overlaps between 1997 and 2022, so the final workable data set for my p
 
 ## Data Overview
 
-After wrangling and tidying the data, the final, workable data set contains 11,583 observations across 25 seasons. One issue that arose when wrangling the data was the imputation of missing values for the final observation from a player's career. It would not be accurate to simply impute with a zero, since many players end the year with a negative WAR yet remain in the NBA for long periods of time. I decided to impute in the pre-processing stage by taking the player's WAR in the observed year, dividing by the median WAR for that season, and multiplying that ratio by the following season's median WAR. This works as a linear continuation of the player's trend compared to his competition, but assumes his playing level won't taper off too heavily. 
+After wrangling and tidying the data, the final, workable data set contains 11,583 observations across 25 seasons. 
+
+One issue that arose when wrangling the data was the imputation of missing values for the final observation from a player's career. It would not be accurate to simply impute with a zero, since many players end the year with a negative WAR yet remain in the NBA for long periods of time. I decided to impute in the pre-processing stage by taking the player's WAR in the observed year, dividing by the median WAR for that season, and multiplying that ratio by the following season's median WAR. This works as a linear continuation of the player's trend compared to his competition, but assumes his playing level won't taper off too heavily. Before imputation, the outcome variable had ~19% missingness, but this method drops that to zero. Below is a missingness report after imputation:
+
+```{r}
+#| label: Missingness Report
+#| echo: false
+#| warning: false
+
+library(here)
+library(tidyverse)
+
+load("results/imputed_missingness.rda")
+
+imputed_missingness |> slice_head(n = 3) |>  knitr::kable()
+```
+The only variable with significant missingness is `draft_number`, or the exact position in the draft a player was chosen. I did not end up using this variable as a predictor, as a small difference in draft position does not make any tangible impact outside of the 1st selection (and only in some drafts!). I did use the `draft_round` variable, which is a factor with three levels: Round 1, Round 2, Undrafted. Below is a plot of the balance across classes.
+
+![Class Imbalance of Players' Draft Round](plots/draft_round_plot.png)
+It is fairly obvious that there are far more players are drafted in the 1st round and end up recording statistics in the NBA. However, given there are a plethora of other predictors in play to indicate success on the court, I am not concerned that the players drafted in the 1st round will skew the impacts of this variable. Two of the best and most tenured players in this data set (LeBron James and Manu Ginobili) were Undrafted and Round 2 selections, respectively.
+
+#### Target Variable Analysis
+
+Getting to the target variable now, here is a plot of its distribution:
+
+![Histogram of Outcome Variable](plots/target_var_plot.png)
+
+The plot is unimodal with some skew. It is centered at zero which is nice, but I naturally looked for transformations to get it a bit more symmetrical, only to find most transformations only made things worse.
+
+![Histogram of Logged Outcome Variable](plots/log_target_var_plot.png)
+
+Not only does the skew get worse, but missing values are produced for all values of zero for this specific transformation. This led me to choose to leave the outcome variable untouched in this project.
+
+#### EDA of Predictors
+
+I conducted a very baseline EDA of the predictor variables and their distributions with the outcome variable in `2.5_predictor_variable_analysis.R`. The only notable takeaways are as follows:
+
+- The predictor `war_total` will remain as-is, largely because I chose to leave the outcome variable unchanged and they are on the same scale since they are the same statistic. There is no concern with heterogeneity since the outcome variable is from the future, essentially unaffected by any of the predictors directly, including `war_total`.
+- None of the numerical predictors need any transformation due to skew, most are roughly linear in their relationship with the target variable.
+- `age`, `player_height`, and `player_weight` seem to have the weakest relationship with the outcome variable.
 
 
 ## Methods
