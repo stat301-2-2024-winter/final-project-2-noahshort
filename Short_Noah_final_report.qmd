@@ -147,7 +147,7 @@ I used 6 different model types in this project:
 - These 3 hyperparameters were tuned using a *random* grid over *12* levels to get a valuable and randomized mix. This means there were 1,728 models trained 30 times each for a total of 51,840 fittings.
 
 ### Recipes
-I used 5 total recipes: 2 stats-heavy recipes (lm and rf), 2 biography-heavy recipes (lm and rf), and 1 baseline recipe
+I used 5 total recipes: 2 stats-heavy recipes (lm and rf), 2 biography-heavy recipes (lm and rf), and 1 baseline recipe. In my recipes, I chose to limit the number of statistical predictors used because I felt many of them would overcomplicate the models. For example, I only wanted one metric for rebounding, so I used `reb` and omitted `drb_pct` and `orb_pct`. A true 'kitchen sink' recipe may be something to explore in later developments or modifications.
 
 **Statistics-Heavy Recipes**
 

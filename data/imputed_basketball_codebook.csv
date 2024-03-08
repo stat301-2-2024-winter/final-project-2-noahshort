@@ -1,0 +1,38 @@
+variables,descriptions
+war_total,WAR total from the 'current' season and playoffs
+next_season_war_total,WAR total from the 'next' season and playoffs
+player_name,player's full name
+player_id,identification for player
+season,year that season ended
+poss,number of possessions player was on court for
+mp,total minutes played for player
+raptor_offense,"RAPTOR offensive metric, from Fivethirtyeight"
+raptor_defense,"RAPTOR defensive metric, from Fivethirtyeight"
+raptor_total,"RAPTOR total metric, from Fivethirtyeight"
+war_reg_season,WAR accumulated from the regular season games
+war_playoffs,WAR accumulated from the playoff games
+predator_offense,"PREDATOR offensive metric, from Fivethirtyeight"
+predator_defense,"PREDATOR defensive metric, from Fivethirtyeight"
+predator_total,"PREDATOR total metric, from Fivethirtyeight"
+pace_impact,"team's pace impact, or deviation from the typical number of possessions in a single game"
+team_abbreviation,abbreviation of team
+age,player age at start of season
+player_height,player height in centimeters (cm)
+player_weight,player weight in kilograms (kg)
+college,college attended by player
+country,"country player grew up in, either USA or World (other)"
+draft_year,"year player was drafted, Undrafted if not drafted"
+draft_round,"round player was drafted in, U if undrafted"
+draft_number,"selection with which player was drafted, NA if not drafted"
+gp,games played that season
+pts,points per game that season
+reb,rebounds per game that season
+ast,assists per game that season
+net_rating,"+/- metric for player, team points scored while player on court minus team points conceded"
+oreb_pct,percentage of available offensive rebounds a player grabs while on the court
+dreb_pct,percentage of available defensive rebounds a player grabs while on the court
+usg_pct,percentage of plays a player is used in when on the floor
+ts_pct,true shooting percentage - shooting percentage adjusted for 3 pointers and free throws
+ast_pct,assist percentage - how often a player records an assist when on the floor
+median_war_total,"median war value for that season, used in imputation"
+ratio,ratio between player's war and the median war that season

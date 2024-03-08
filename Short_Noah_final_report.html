@@ -3230,7 +3230,7 @@ Github Repo Link
 </section>
 <section id="recipes" class="level3">
 <h3 class="anchored" data-anchor-id="recipes">Recipes</h3>
-<p>I used 5 total recipes: 2 stats-heavy recipes (lm and rf), 2 biography-heavy recipes (lm and rf), and 1 baseline recipe</p>
+<p>I used 5 total recipes: 2 stats-heavy recipes (lm and rf), 2 biography-heavy recipes (lm and rf), and 1 baseline recipe. In my recipes, I chose to limit the number of statistical predictors used because I felt many of them would overcomplicate the models. For example, I only wanted one metric for rebounding, so I used <code>reb</code> and omitted <code>drb_pct</code> and <code>orb_pct</code>. A true ‘kitchen sink’ recipe may be something to explore in later developments or modifications.</p>
 <p><strong>Statistics-Heavy Recipes</strong></p>
 <ul>
 <li>Used the following predictors: <code>war_total</code>, <code>raptor_offense</code>, <code>raptor_defense</code>, <code>pts</code>, <code>reb</code>, <code>ast</code>, and <code>draft_round</code></li>
