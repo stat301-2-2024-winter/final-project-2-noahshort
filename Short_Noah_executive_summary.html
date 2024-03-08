@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Noah Short">
-<meta name="dcterms.date" content="2024-03-07">
+<meta name="dcterms.date" content="2024-03-08">
 
 <title>Executive Summary: Predicting NBA Player Success</title>
 <style>
@@ -3004,7 +3004,7 @@ Data Science 2 with R (STAT 301-2)</p><p></p>
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 7, 2024</p>
+      <p class="date">March 8, 2024</p>
     </div>
   </div>
   
@@ -3041,7 +3041,7 @@ Github Repo Link
 <p>The data span 25 seasons, 1997 - 2021, and contains 11,583 observations of player statistics and details for the season. Players in their final season had missing values for the outcome variable, next season’s WAR, so I imputed using the ratio of their WAR and the median WAR for the league within that season multiplied by the median war for the league in the next season.</p>
 <p>I split the data by season, yielding an 82:18 split between the training and testing sets. I resampled the data using v-fold cross validation such that each model was fitted 30 times.</p>
 <p>I developed 2 recipes: one that was heavier on statistics and one that was heavier on the biographical information.</p>
-<p>6 models were used: Null, Linear, Elastic net, K-Nearest Neighbors, Random Forest, and Boosted Trees</p>
+<p>6 models were used with tuning on 4 of them: Null, Linear, Elastic net (penalty and mixture tuned), K-Nearest Neighbors (neighbors tuned), Random Forest (min_n and mtry tuned), and Boosted Trees (min_n, mtry, and learn_rate tuned)</p>
 </section>
 <section id="findings" class="level2">
 <h2 class="anchored" data-anchor-id="findings">Findings</h2>
@@ -3268,7 +3268,8 @@ Github Repo Link
 <li><p>Our model accounts for 56.8% of the variance in the WAR value for a player in the following season.</p></li>
 <li><p>The average difference between the true and predicted values is 1.34 wins above replacement.</p></li>
 </ul>
-<p>The the test results provide a couple of key takeaways for how I could improve the model in the future:</p>
+<p>Overall, I do not think the model is at workable level for the real world yet. The improvement from the null model shows promise, but the average RMSE and MAE are still too large to rely on the model for accurate results.</p>
+<p>The test results provide a couple of key takeaways for how I could improve the model in the future:</p>
 <ul>
 <li><p>More Predictors: This is a fairly straightforward one, but given most models had similar performance across both recipes, it seems clear that (at least in the linear case) we could see some marginal improvements with more predictors, assuming they are indicative.</p></li>
 <li><p>Better Indication for Elite Players: The model was scared to overestimate WAR for players with very high true WARs, so including an indicator for personal accolades such as awards or all-pro team selections could push the model to not be as timid.</p></li>

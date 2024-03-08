@@ -30,11 +30,13 @@ citation-location: margin
 
 ## Introduction
 
-This project looks to predict an NBA player's Win's Above Replacement (WAR) in the next year using statistics from the previous year and biographical information. Wins Above Replacement is a relatively new statistic in many sports that uses a laughingly complicated formula to calculate a player's value in a season or across a career in terms of the number of wins they added to the team above a typical "replacement" player. I would like to predict this variable to investigate how strongly a player's performance in the previous year is connected to the next year's. From my own experience as a fan, it seems that outside of the top 20-30 players in the NBA, role players seem to have a "revolving door" type of experience with success: constantly fluctuating between stretches of stardom and disappointment. This leads me to hypothesize that this prediction may be quite challenging.
+This project aims to predict an NBA player's Win's Above Replacement (WAR) in the next season using statistics from the previous one and biographical information. Wins Above Replacement is a relatively new statistic in many sports that uses a laughingly complicated formula to calculate a player's value in a season or across a career in terms of the number of wins they added to the team above a typical "replacement" player. I would like to predict this variable to investigate how strongly a player's performance in the previous year is connected to the next year's. 
+
+From my own experience as a fan, it seems that outside of the top 20-30 players in the NBA, players seem to have a "revolving door" type of experience with success: constantly fluctuating between stretches of stardom and disappointment. This leads me to hypothesize that this prediction may be challenging outside of the elite players.
 
 I use two data sources in this project. Each data source contains observations of a player's statistics in a single season accompanied by some biographical information. The first data source is heavier on the statistics and comes from Fivethirtyeight. It contains their "Raptor" data, which they describe as "a plus-minus statistic that measures the number of points a player contributes to his team’s offense and defense per 100 possessions, relative to a league-average player" (Silver). The other data source is a public data set on Kaggle with some more basic statistics as well as information on draft position and a player's home country.
 
-The data overlaps between 1997 and 2022, so the final workable data set for my purposes contains observations of all players between 1997 and 2021. 
+The data overlaps between 1997 and 2022, so the final workable data set for my purposes contains observations of all players between 1997 and 2021, as I cannot use 2022 data without the WAR metric from the following season. 
 
 
 ## Data Overview
@@ -58,7 +60,8 @@ imputed_missingness |> slice_head(n = 3) |>  knitr::kable()
 The only variable with significant missingness is `draft_number`, or the exact position in the draft a player was chosen. I did not end up using this variable as a predictor, as a small difference in draft position does not make any tangible impact outside of the 1st selection (and only in some drafts!). I did use the `draft_round` variable, which is a factor with three levels: Round 1, Round 2, Undrafted. Below is a plot of the balance across classes.
 
 ![Class Imbalance of Players' Draft Round](plots/draft_round_plot.png)
-It is fairly obvious that there are far more players are drafted in the 1st round and end up recording statistics in the NBA. However, given there are a plethora of other predictors in play to indicate success on the court, I am not concerned that the players drafted in the 1st round will skew the impacts of this variable. Two of the best and most tenured players in this data set (LeBron James and Manu Ginobili) were Undrafted and Round 2 selections, respectively.
+
+It is fairly obvious that there are far more players drafted in the 1st round and end up recording statistics in the NBA. However, given there are a plethora of other predictors in play to indicate success on the court, I am not concerned that the players drafted in the 1st round will skew the impacts of this variable. Two of the best and most tenured players in this data set (LeBron James and Manu Ginobili) were Undrafted and Round 2 selections, respectively.
 
 ### Target Variable Analysis
 
@@ -78,17 +81,18 @@ imputed_basketball_data |>
 
 ![Histogram of Outcome Variable](plots/target_var_plot.png)
 
-The plot is unimodal with some skew. It is centered at zero which is nice, but I naturally looked for transformations to get it a bit more symmetrical, only to find most transformations only made things worse.
+The plot is unimodal with some skew. It is centered near zero which is nice, but I naturally looked for transformations to get it a bit more symmetrical, only to find most transformations only made things worse.
 
 ![Histogram of Logged Outcome Variable](plots/log_target_var_plot.png)
 
-Not only does the skew get worse, but missing values are produced for all values of zero for this specific transformation. This led me to choose to leave the outcome variable untouched in this project.
+The plot is a bit more spread out, but the skew takes longer to taper off. Also, missing values are generated for all original values of 0. This led me to choose to leave the outcome variable untouched in this project.
 
 ### EDA of Predictors
 
-I conducted a very baseline EDA of the predictor variables and their distributions with the outcome variable in `2.5_predictor_variable_analysis.R`. The only notable takeaways are as follows:
+I conducted a very baseline EDA of the predictor variables and their distributions with the outcome variable in `2.5_predictor_variable_analysis.R`. The notable takeaways are as follows:
 
-- The predictor `war_total` will remain as-is, largely because I chose to leave the outcome variable unchanged and they are on the same scale since they are the same statistic. There is no concern with multicollinearity since the outcome variable is from the future, essentially unaffected by any of the predictors directly, including `war_total`.
+- The predictor `war_total` will remain as-is, largely because I chose to leave the outcome variable unchanged and they are on the same scale since they are the same statistic. 
+- There is no concern with multicollinearity since the outcome variable is from the future, essentially unaffected by any of the predictors directly, including `war_total`.
 - None of the numerical predictors need any transformation due to skew, most are roughly linear in their relationship with the target variable.
 - `age`, `player_height`, and `player_weight` seem to have the weakest relationship with the outcome variable.
 
@@ -121,7 +125,7 @@ I used 6 different model types in this project:
 
 **Elastic Net Model** - used lm recipes
 
-- Linear regression with varying 'mixture' and 'penalty' hyperparameters, which were both tuned.
+- Linear regression with varying `mixture` and `penalty` hyperparameters, which were both tuned.
 - Mixture term is a scale from 0 to 1 and indicates how strong the model should be in fitting. Lower mixture means more reliance on the data itself, higher mixture means greater use of tools.
 - Penalty term is a scale from 0 to 1 where 0 means the model is solely concerned with balancing out effects of multiple predictors, while 1 means the model is solely concerned with finding which predictors matter and which don't.
 - 2 parameters tuned using a regular grid over 5 levels each, so 25 different elastic net models were trained 30 times each, for 750 total trainings.
@@ -135,7 +139,7 @@ I used 6 different model types in this project:
 **Random Forest Model** - used rf recipes
 
 - Decision tree-based model where many decision trees are ran through to get an estimate then averaged over.
-- 2 hyperparamaters tuned: `min_n` and `min_n`. `trees` set to 500.
+- 2 hyperparamaters tuned: `min_n` and `mtry`. `trees` set to 500.
 - `min_n` is the number of data points to split.
 - `mtry` is the number of predictors to use in the decision trees.
 - Both tuning parameters used a regular grid over 5 levels, so 25 different random forest models were trained 30 times each, for 750 total fits.
@@ -144,10 +148,12 @@ I used 6 different model types in this project:
 
 - Add-on to random forest, in that each tree learns from the last and is combined into a stronger model. Three hyperparameters were tuned: `min_n` and `mtry` are the same as random forest, but `learn_rate` is new.
 - `learn_rate` is the level of influence one tree has on the next, it ranges from 0 to 1.
-- These 3 hyperparameters were tuned using a *random* grid over *12* levels to get a valuable and randomized mix. This means there were 1,728 models trained 30 times each for a total of 51,840 fittings.
+- These 3 hyperparameters were tuned using a *random* grid over 12 levels to get a valuable and randomized mix. This means there were 1,728 models trained 30 times each for a total of 51,840 fittings.
 
 ### Recipes
-I used 5 total recipes: 2 stats-heavy recipes (lm and rf), 2 biography-heavy recipes (lm and rf), and 1 baseline recipe. In my recipes, I chose to limit the number of statistical predictors used because I felt many of them would overcomplicate the models. For example, I only wanted one metric for rebounding, so I used `reb` and omitted `drb_pct` and `orb_pct`. A true 'kitchen sink' recipe may be something to explore in later developments or modifications.
+I used 5 total recipes: 2 stats-heavy recipes (lm and rf), 2 biography-heavy recipes (lm and rf), and 1 baseline recipe. 
+
+In my recipes, I chose to limit the number of statistical predictors used because I felt many of them would overcomplicate the models. For example, I only wanted one metric for rebounding, so I used `reb` and omitted `drb_pct` and `orb_pct`. A true 'kitchen sink' recipe may be something to explore in later developments or modifications.
 
 **Statistics-Heavy Recipes**
 
@@ -304,7 +310,7 @@ basketball_test_metrics
 
 - The average difference between the true and predicted values is 1.34 wins above replacement.
 
-There are several takeaways from these results. To start, the model improved! This should raise some skeptcism, but taken at face value this means the model is doing exactly what we want it to do, in that it takes the time-aspect into account and improves as we get closer to the current environment. This is why we split the data based on season, not randomly. Also, the RMSE and MAE are not great, in my opinion. We saw earlier that the 75th percentile of the outcome variable is 2.94, so having an average error of nearly half of that 75th percentile is not great, as many of the observations have outcome values near 0. This iffy performance is supplemented by an equally iffy R-squared, which tells us there is still 44% of the variance unaccounted for. Maybe a kitchen sink recipe would capture more of this, but we saw that some more complex models didn't improve the RMSE, so it could be that NBA player WAR is hard to predict. 
+There are several takeaways from these results. To start, the model improved! This should raise some skeptcism, but taken at face value this means the model is doing exactly what we want it to do, in that it takes the seasonal aspect into account and improves as we get closer to the current environment. This is why we split the data based on season, not randomly. Also, the RMSE and MAE are not great in my opinion. We saw earlier that the 75th percentile of the outcome variable is 2.94, so having an average error of nearly half that is not great, as many of the observations have outcome values near 0. This iffy performance is supplemented by an equally iffy R-squared, which tells us there is still 44% of the variance unaccounted for. Maybe a kitchen sink recipe would capture more of this, but we saw that some more complex models didn't improve the RMSE, so it could be that NBA player WAR is simply hard to predict. 
 
 Here is a plot of the results: 
 
@@ -315,7 +321,7 @@ This plot certainly explains some of the model's tendencies. The predictions are
 
 ## Conclusion 
 
-To quickly summarize: I took statistical and biographical data from NBA players by season between 1997 and 2021 to attempt to predict each player's WAR (Wins Above Replacement) in the following season. I used 6 different models and 2 strategically targeted recipes (one at statistical indicators and another at biographical ones) to make this prediction. It turned out that a relatively basic linear model with an emphasis on biographical predictors performed best on the resampled training set of data, and applying it to the testing set actually improved its performance while providing some key takeaways.  
+To quickly summarize: I took statistical and biographical data from NBA players by season between 1997 and 2021 to attempt to predict each player's WAR (Wins Above Replacement) in the following season. I used 6 different models and 2 strategically targeted recipes (one at statistical indicators and another at biographical ones) to make this prediction. It turned out that a relatively basic linear model with an emphasis on biographical predictors performed best on the resampled training set of data, and applying it to the testing set actually improved its performance while providing some key takeaways. Overall, the model is not something I would apply to real-life use at this point, as the metrics from applying it to the testing set are not great. 
 
 The takeaways from the test results provide a couple implications for how I could improve the model in the future:
 

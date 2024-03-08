@@ -46,7 +46,7 @@ I split the data by season, yielding an 82:18 split between the training and tes
 
 I developed 2 recipes: one that was heavier on statistics and one that was heavier on the biographical information.
 
-6 models were used: Null, Linear, Elastic net, K-Nearest Neighbors, Random Forest, and Boosted Trees
+6 models were used with tuning on 4 of them: Null, Linear, Elastic net (penalty and mixture tuned), K-Nearest Neighbors (neighbors tuned), Random Forest (min_n and mtry tuned), and Boosted Trees (min_n, mtry, and learn_rate tuned)
 
 ## Findings
 
@@ -85,7 +85,9 @@ basketball_test_metrics
 
 - The average difference between the true and predicted values is 1.34 wins above replacement.
 
-The the test results provide a couple of key takeaways for how I could improve the model in the future:
+Overall, I do not think the model is at workable level for the real world yet. The improvement from the null model shows promise, but the average RMSE and MAE are still too large to rely on the model for accurate results. 
+
+The test results provide a couple of key takeaways for how I could improve the model in the future:
 
 - More Predictors: This is a fairly straightforward one, but given most models had similar performance across both recipes, it seems clear that (at least in the linear case) we could see some marginal improvements with more predictors, assuming they are indicative.
 
