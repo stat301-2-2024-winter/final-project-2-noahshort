@@ -57,15 +57,15 @@ load("results/imputed_missingness.rda")
 
 imputed_missingness |> slice_head(n = 3) |>  knitr::kable()
 ```
-The only variable with significant missingness is `draft_number`, or the exact position in the draft a player was chosen. I did not end up using this variable as a predictor, as a small difference in draft position does not make any tangible impact outside of the 1st selection (and only in some drafts!). I did use the `draft_round` variable, which is a factor with three levels: Round 1, Round 2, Undrafted. Below is a plot of the balance across classes.
+The only variable with significant missingness is `draft_number`, or the exact position in the draft a player was chosen. I did not end up using this variable as a predictor, as a small difference in draft position does not make any tangible impact outside of the 1st selection (and only in some drafts!). I did use the `draft_round` variable, which is a factor with three levels: Round 1, Round 2, Undrafted. @fig-draft_round below shows the distribution of `draft round`.
 
-![Class Imbalance of Players' Draft Round](plots/draft_round_plot.png)
+![Class Imbalance of Players' Draft Round](plots/draft_round_plot.png){#fig-draft_round}
 
 It is fairly obvious that there are far more players drafted in the 1st round and end up recording statistics in the NBA. However, given there are a plethora of other predictors in play to indicate success on the court, I am not concerned that the players drafted in the 1st round will skew the impacts of this variable. Two of the best and most tenured players in this data set (LeBron James and Manu Ginobili) were Undrafted and Round 2 selections, respectively.
 
 ### Target Variable Analysis
 
-Getting to the target variable now, here is a plot of its distribution and breakdown of its spread:
+Getting to the target variable now, @fig-target provides a plot of its distribution and the table below provides breakdown of its spread:
 
 ```{r}
 #| label: skim chart
@@ -79,11 +79,11 @@ imputed_basketball_data |>
 ```
 
 
-![Histogram of Outcome Variable](plots/target_var_plot.png)
+![Histogram of Outcome Variable](plots/target_var_plot.png){#fig-target}
 
-The plot is unimodal with some skew. It is centered near zero which is nice, but I naturally looked for transformations to get it a bit more symmetrical, only to find most transformations only made things worse.
+The plot is unimodal with some skew. It is centered near zero which is nice, but I naturally looked for transformations to get it a bit more symmetrical, only to find most transformations only made things worse, as indicated in @fig-logtarget.
 
-![Histogram of Logged Outcome Variable](plots/log_target_var_plot.png)
+![Histogram of Logged Outcome Variable](plots/log_target_var_plot.png){#fig-logtarget}
 
 The plot is a bit more spread out, but the skew takes longer to taper off. Also, missing values are generated for all original values of 0. This led me to choose to leave the outcome variable untouched in this project.
 
@@ -312,9 +312,9 @@ basketball_test_metrics
 
 There are several takeaways from these results. To start, the model improved! This should raise some skeptcism, but taken at face value this means the model is doing exactly what we want it to do, in that it takes the seasonal aspect into account and improves as we get closer to the current environment. This is why we split the data based on season, not randomly. Also, the RMSE and MAE are not great in my opinion. We saw earlier that the 75th percentile of the outcome variable is 2.94, so having an average error of nearly half that is not great, as many of the observations have outcome values near 0. This iffy performance is supplemented by an equally iffy R-squared, which tells us there is still 44% of the variance unaccounted for. Maybe a kitchen sink recipe would capture more of this, but we saw that some more complex models didn't improve the RMSE, so it could be that NBA player WAR is simply hard to predict. 
 
-Here is a plot of the results: 
+@fig-prediction provides a plot of the predicted values versus the true values when applying the final model to the testing set.
 
-![Predicted vs. True Values](plots/basketball_results_plot.png)
+![Predicted vs. True Values](plots/basketball_results_plot.png){#fig-prediction}
 
 This plot certainly explains some of the model's tendencies. The predictions are much more accurate at values near zero, as there is clearly some flaring out of the predictions as the true value of the outcome variable increases. Also of note is the fact that at true WAR values above 10 only **one** prediction is an over-prediction, meaning the model is downward biased at high values of the true WAR. 
 

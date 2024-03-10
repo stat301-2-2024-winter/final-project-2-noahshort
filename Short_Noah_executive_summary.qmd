@@ -63,9 +63,9 @@ best_models_table
 
 It turns out that more complex models may not be helpful in this context, as the relatively simple Linear model ended up performing the best. 
 
-Here are the results of fitting this Linear model to the testing set:
+See @fig-prediction for a plot of the final model's results.
 
-![Predicted vs. True Values](plots/basketball_results_plot.png)
+![Predicted vs. True Values](plots/basketball_results_plot.png){#fig-prediction}
 
 ```{r}
 #| label: final fit results
